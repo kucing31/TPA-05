@@ -1,8 +1,12 @@
 const dotenv = require('dotenv').config();
-const db = require("../models");
+const db = require("../db/models");
 const {Todos} = db;
+const jwt = require("jsonwebtoken");
 
 module.exports = {
+    
+
+
     getAlltodo: async (req, res) => {
         const todos = await Todos.findAll();
         res.json({
@@ -23,12 +27,22 @@ module.exports = {
 
     createtodo: async (req, res) => {
         try{
-            const { title, desc, isCompleted } = req.body;
+            const auth = req.headers.authorization; // Bearer tokennn
+            const token = auth.split(" ")[1]; // tokennn
+            const payload = jwt.verify(token, process.env.SECRET_KEY);
+            console.log('auth', auth);
+            console.log('token', token);
+            console.log('payload', payload);
+            const user = payload.data;
+            console.log('user', user);
+
+            const { title, description } = req.body;
             const newTodoData = {
                 title: title,
-                desc: desc,
-                isCompleted: isCompleted
+                description: description,
+                user_id : user.id
             };
+            console.log('newTodoData', newTodoData);
 
             const todoData = await Todos.create(newTodoData);
             console.log(todoData);
@@ -36,6 +50,8 @@ module.exports = {
                 message: 'Berhasil membuat Todo baru',
                 todoData
             });
+            console.log(newTodoData);
+
         } catch (err) {
             res.status(500).json({
                 message: err.message || 'Kegagalan Server',
@@ -58,7 +74,7 @@ module.exports = {
                     id: req.params.id
                 }
             }); 
-
+            
             res.status(200).json({
                 message: 'Berhasil merubah Todo',
             });

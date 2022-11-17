@@ -1,5 +1,5 @@
-const dotenv = require('dotenv').config();
-const db = require("../models");
+require('dotenv').config();
+const db = require("../db/models");
 const {Users} = db;
 
 const bcrypt = require("bcrypt");
@@ -17,7 +17,7 @@ module.exports = {
           })
     },
   
-    createUser: async (req, res) => {
+    buatUser: async (req, res) => {
       try {
         const { name, email, password } = req.body;
         const saltRounds = await bcrypt.genSalt(10);
@@ -26,7 +26,8 @@ module.exports = {
         const newDataRegister = {
           name,
           email,
-          password: hasPassword
+          password: hasPassword, 
+          role_id : 1
         }
   
         const users = await Users.create(newDataRegister);
@@ -45,25 +46,30 @@ module.exports = {
     //Login User
     userlogin: async (req, res) => {
       try {
-        const { name, email, password } = req.body;
-        const users = await Users.findOne(email, name);
+        const { email, password } = req.body;
+        const users = await Users.findOne({ where: { email: email } });
         if (!users) {
           return res.status(404).json({
             message: 'Pengguna tidak ditemukan'
           })
         }
 
-        const hasPassword = await bcrypt.compare(password)
-        if (!hasPassword) {
-          return res.status(401).json({
-            message: 'Password is incorrect',
-          })
-        }
-  
-        // signing token with user email
-        const token = jwt.sign(email, KEY, {
-          expiresIn: '30s'
-        })
+    
+        bcrypt.compare(password, users.password, function(err, result) {
+          if(err){
+            return res.status(401).json({
+              message: 'Password is incorrect',
+            })
+          }
+        });
+    
+        const token = jwt.sign({
+          data: { 
+            id: users.id,
+            name : users.name,
+            email : users.email,
+          }
+        }, process.env.SECRET_KEY, { expiresIn: 60 * 60 });
   
         // memberikan token ke client dan menyembunyikan password
         res.status(200).json({

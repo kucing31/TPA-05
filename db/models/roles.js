@@ -7,15 +7,15 @@ function model(sequelize, DataTypes) {
             allowNull: false,
             autoIncrement: true,
             primaryKey: true,
-            type: Sequelize.INTEGER
+            type: DataTypes.INTEGER
           },
           name: {
             allowNull: true,
-            type: Sequelize.STRING(50)
+            type: DataTypes.STRING(50)
           },
           description: {
             allowNull: true,
-            type: Sequelize.STRING(100)
+            type: DataTypes.STRING(100)
           }
         }, 
         

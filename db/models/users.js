@@ -12,6 +12,7 @@ function model(sequelize, DataTypes) {
           role_id: {
             allowNull: true,
             type: DataTypes.INTEGER,
+            defaultValue : 2,
             references: {
               model: 'roles',
               key: 'id'
